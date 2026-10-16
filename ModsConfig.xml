@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Список модов, на котором мерялось всё в CLAUDE.md: Hardcore SK без Combat Extended на
+RimWorld 1.7. Снят с рабочего Config\ModsConfig.xml 2026-10-13; прогон того дня дал
+1674 строки лога и 2 ошибки.
+
+Как пользоваться: закрыть игру, сохранить свой <профиль>\Config\ModsConfig.xml и положить
+этот файл на его место. Профиль лежит в
+C:\Users\<имя>\AppData\LocalLow\Ludeon Studios\RimWorld by Ludeon Studios\.
+Игра перезаписывает файл при выходе и молча выбрасывает моды, которых не нашла, так что
+копию делать нужно именно до запуска.
+
+Что здесь важно, помимо самого пака:
+
+    erdelf.humanoidalienraces      без него 1.7 теряет почти все текстуры — это была не
+                                   поломка движка, а упавший AlienRace.ThingDef_AlienRace
+    adaptive.storage.framework     должен стоять выше пака: XmlInheritance разрешает
+                                   наследование только от мода с меньшим loadOrder
+    ccl.patchoperation.highlander  даёт PatchOperation.FindModByID, который пак зовёт из
+                                   своих патчей
+    qwerty19106.researchtreesk     без него ~400 ошибок ResearchTreeSKModExtension и 238
+                                   ненайденных ResearchProjectDef
+
+Combat Extended в списке нет намеренно — в этом весь смысл прогона. Повторные записи DLC
+в конце оставлены как есть: так их пишет сама игра.
+
+Версия в <version> — та, на которой файл снят; игра перепишет её сама.
+-->
+<ModsConfigData>
+  <version>1.7.4976 rev1043</version>
+  <activeMods>
+    <li>brrainz.harmony_steam</li>
+    <li>ludeon.rimworld</li>
+    <li>ludeon.rimworld.royalty</li>
+    <li>ludeon.rimworld.ideology</li>
+    <li>ludeon.rimworld.biotech</li>
+    <li>ludeon.rimworld.anomaly</li>
+    <li>ludeon.rimworld.odyssey</li>
+    <li>linya.patchtransition</li>
+    <li>ccl.patchoperation.highlander</li>
+    <li>unlimitedhugs.hugslib</li>
+    <li>adaptive.storage.framework</li>
+    <li>erdelf.humanoidalienraces</li>
+    <li>mersid.backuppowerupdated</li>
+    <li>jamaicancastle.rf.fertilefields</li>
+    <li>notfood.mendandrecycle</li>
+    <li>solarweb.stratum</li>
+    <li>skyarkhangel.hsk</li>
+    <li>skyarkhangel.hsk.core</li>
+    <li>skyarkhangel.hsk.dlc</li>
+    <li>sbz.neatstoragefridge</li>
+    <li>antaioz.modmedicinepatch</li>
+    <li>ghxx.techadvancing</li>
+    <li>qwerty19106.researchtreesk</li>
+    <li>ogliss.thewhitecrayon.quarry</li>
+    <li>zacharyfoster.minerals</li>
+    <li>falconne.bwm</li>
+    <li>skyarkhangel.survivaltoolslite</li>
+    <li>arof.fluffy.worktab.continued</li>
+    <li>xeonovadan.rimworldfavourites</li>
+  </activeMods>
+  <knownExpansions>
+    <li>ludeon.rimworld.royalty</li>
+    <li>ludeon.rimworld.ideology</li>
+    <li>ludeon.rimworld.biotech</li>
+    <li>ludeon.rimworld.anomaly</li>
+    <li>ludeon.rimworld.odyssey</li>
+  </knownExpansions>
+</ModsConfigData>

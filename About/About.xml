@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+	<name>Patch Transition</name>
+	<author>linyaDev</author>
+	<supportedVersions>
+		<li>1.6</li>
+		<li>1.7</li>
+	</supportedVersions>
+	<packageId>linya.patchtransition</packageId>
+	<description>
+[English]
+A transitional layer for Hardcore SK: keeps the pack running while it sits between RimWorld versions and between mod sets.
+
+The pack is written for one exact environment — Combat Extended, a given RimWorld version, its full mod list. Remove any part of that and defs disappear, patches miss their targets, numbers land in the wrong component. This mod fills those gaps from the outside: stub types and defs for what is absent, small fixes where a new engine broke the pack's own code, and silence for the errors that can be nothing else.
+
+Every piece is conditional. Whatever is really installed takes over, and the mod steps aside.
+
+[Russian]
+Переходная прослойка для Hardcore SK: держит сборку на ходу, пока она между версиями RimWorld и между составами модов.
+
+Пак написан под одно конкретное окружение — Combat Extended, определённая версия игры, полный список модов. Убери любую часть, и дефы исчезают, патчи не находят цель, числа попадают не в тот компонент. Мод закрывает эти дыры снаружи: подставляет типы и дефы вместо отсутствующих, правит то, что сломал новый движок, и убирает из лога сообщения, которыми всё равно ничего не сделать.
+
+Каждая часть условна. Если нужный мод установлен, работает он, а прослойка отходит в сторону.
+	</description>
+	<loadAfter>
+		<li>Ludeon.RimWorld</li>
+		<li>brrainz.harmony</li>
+		<li>CETeam.CombatExtended</li>
+	</loadAfter>
+	<loadBefore>
+		<li>skyarkhangel.HSK</li>
+	</loadBefore>
+</ModMetaData>

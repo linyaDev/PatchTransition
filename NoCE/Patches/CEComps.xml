@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Компоненты и расширения, которые CE навешивает на ванильный контент, а Core SK потом
+настраивает.
+
+Зачем. Пак не добавляет мехам прочность брони — он исходит из того, что это уже сделал CE,
+и только правит числа:
+
+    SK.PatchOperationReplaceExtended
+    xpath: Defs/ThingDef[defName="Mech_Scorcher"]/comps/li[@Class="CombatExtended.CompProperties_ArmorDurability"]
+
+А эта операция, не найдя цель, не сдаётся: CreateMissingPath берёт путь до последнего слэша,
+ищет потомка по голому имени (предикат отбрасывается!) и, если не находит, создаёт пустой
+элемент. Поэтому без CE числа пака уходят либо в тот компонент, что оказался в списке первым,
+либо в свежий <li> без класса — отсюда строки вида
+"<Durability>850</Durability> doesn't correspond to any field in type CompProperties".
+
+Здесь эти компоненты добавляются пустыми, ровно туда, куда их кладёт CE. Числа впишет сам
+пак, а наши заглушки всё равно инертны. Польза не только в тишине лога — патчи пака наконец
+делают то, что в них написано.
+
+Список целей собран из самих патчей пака, а не из лога: часть xpath'ов перечисляет дефы
+объединением (defName="Mech_Lifter" or defName="Mech_Constructoid" or ...), и по логу видно
+только первый из них.
+
+Почему две операции на каждый случай, а не PatchOperationConditional. Условная операция
+проверяет путь одним SelectSingleNode: если узел нашёлся хотя бы у одного дефа из набора,
+ветка match дописывает элемент только тем, у кого он уже есть, а остальные остаются ни с чем.
+И это не теория: Mech_Scorcher существует в двух копиях — ванильной из Biotech и собственной
+из Core_SK_DLCModule, — и ровно он оставался без компонента. Поэтому условие перенесено в сам
+xpath: сначала дописываем элемент тем, у кого список есть, затем создаём список тем, у кого
+его нет. Порядок важен — иначе второй проход задел бы только что созданные.
+
+success=Always у всех: отсутствие дефа (выключенное DLC) не должно становиться нашей ошибкой.
+
+Осколки 155-мм снарядов (CompProperties_Fragments) сюда не вошли: их патчи лежат в CE-папках
+пака, то есть падают тихо, а компонент осколков у нас всё равно инертен.
+-->
+<Patch>
+
+	<!-- ===== Прочность брони мехов ===== -->
+	<!-- Биотеховские лёгкие и средние мехи плюс база центипедов -->
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Mech_Lancer" or defName="Mech_Pikeman" or defName="Mech_Scyther" or defName="Mech_Termite" or defName="Mech_Scorcher" or defName="Mech_Apocriton" or defName="Mech_Lifter" or defName="Mech_Constructoid" or defName="Mech_Fabricor" or defName="Mech_Agrihand" or defName="Mech_Paramedic" or @Name="MechCentipede"]/comps</xpath>
+		<value>
+			<li Class="CombatExtended.CompProperties_ArmorDurability" />
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[(defName="Mech_Lancer" or defName="Mech_Pikeman" or defName="Mech_Scyther" or defName="Mech_Termite" or defName="Mech_Scorcher" or defName="Mech_Apocriton" or defName="Mech_Lifter" or defName="Mech_Constructoid" or defName="Mech_Fabricor" or defName="Mech_Agrihand" or defName="Mech_Paramedic" or @Name="MechCentipede") and not(comps)]</xpath>
+		<value>
+			<comps>
+				<li Class="CombatExtended.CompProperties_ArmorDurability" />
+			</comps>
+		</value>
+	</Operation>
+
+	<!-- ===== Потребитель патронов ===== -->
+	<!--
+	Ствол из Royalty: пак заменяет внутри компонента узел ammoSet, поэтому и узел нужен.
+	Уникальные стволы из Odyssey: у них comps есть, и первым стоит ванильный
+	CompProperties_EquippableAbilityReloadable — именно в него и попадал ammoSet пака.
+	-->
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Gun_HellcatRifle" or defName="Gun_Revolver_Unique" or defName="Gun_ChargeLance_Unique" or defName="Bow_Great_Unique"]/comps</xpath>
+		<value>
+			<li Class="CombatExtended.CompProperties_AmmoUser">
+				<ammoSet>AmmoSet_556x45mmNATO</ammoSet>
+			</li>
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[(defName="Gun_HellcatRifle" or defName="Gun_Revolver_Unique" or defName="Gun_ChargeLance_Unique" or defName="Bow_Great_Unique") and not(comps)]</xpath>
+		<value>
+			<comps>
+				<li Class="CombatExtended.CompProperties_AmmoUser">
+					<ammoSet>AmmoSet_556x45mmNATO</ammoSet>
+				</li>
+			</comps>
+		</value>
+	</Operation>
+
+	<!-- ===== Снаряжение пешек ===== -->
+	<!-- То же самое, но в modExtensions: пак правит выдачу оружия бойцам Империи -->
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/PawnKindDef[defName="Empire_Fighter_Champion" or defName="Empire_Fighter_Grenadier"]/modExtensions</xpath>
+		<value>
+			<li Class="CombatExtended.LoadoutPropertiesExtension" />
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/PawnKindDef[(defName="Empire_Fighter_Champion" or defName="Empire_Fighter_Grenadier") and not(modExtensions)]</xpath>
+		<value>
+			<modExtensions>
+				<li Class="CombatExtended.LoadoutPropertiesExtension" />
+			</modExtensions>
+		</value>
+	</Operation>
+
+</Patch>

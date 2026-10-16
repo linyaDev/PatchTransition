@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Узлы, которые в обычной сборке создаёт Combat Extended, а Core SK потом правит.
+
+Тот же случай, что и с компонентами (CEComps.xml), только мельче: пак не добавляет узел, он
+исходит из того, что CE его уже добавил, и делает Replace или Remove. Без CE узла нет, и
+операция промахивается — по строке в логе на каждую.
+
+Откуда узлы берутся у CE. Один из пяти он кладёт своим патчем, и значение взято оттуда:
+
+    stages с painFactor 0.5 у Scaria  — Patches/Core/HediffDefs/Hediffs_Local_Misc.xml
+
+Значение weaponMoney у снайперов-наёмников — наше, и это стоит сказать прямо: сверка показала,
+что ни апстримная CE 1.6, ни копия пака этот деф не трогают вовсе (CE 1.7 добавляет базовому
+415~600, но это её собственная новация). Паку узел нужен только для того, чтобы его
+PatchOperationReplace нашёл цель, а 950~1300 выбрано выше его самой дешёвой снайперской винтовки
+за 950 — иначе ванильная проверка пишет "cheapest weapon costs 950 but weaponMoney min is ..."
+
+Остальные три CE делает кодом — его авто-патчер переписывает материалы и боевые статы
+(Defs/ApparelAutoPatcherPresets и соответствующие классы). Воспроизводить эту логику смысла
+нет: пак всё равно тут же заменяет значение своим. Нам важно, чтобы узел существовал, поэтому
+значения взяты нейтральные.
+
+Везде проверка not(...) в самом xpath: если узел уже есть, операция ничего не делает, а
+success=Always не даёт отсутствию дефа (выключенное DLC) стать нашей ошибкой.
+-->
+<Patch>
+
+	<!--
+	Детский шлем. Материалы ему переписывает авто-патчер CE, а пак затем меняет Steeled на
+	свой RuggedMetallic. Сама категория Steeled объявлена в CEMisc.xml — на случай, если
+	замена не состоится.
+	-->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Apparel_KidHelmet"]/stuffCategories[not(li[.="Steeled"])]</xpath>
+		<value>
+			<li>Steeled</li>
+		</value>
+	</Operation>
+
+	<!-- Дриада: стат ближнего боя добавляет CE, пак его убирает -->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Dryad_Barkskin"]/statBases[not(MeleeParryChance)]</xpath>
+		<value>
+			<MeleeParryChance>1</MeleeParryChance>
+		</value>
+	</Operation>
+
+	<!-- Древняя турель: пак убирает из множителей урона запись про пули -->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Turret_AncientArmoredTurret" and not(damageMultipliers)]</xpath>
+		<value>
+			<damageMultipliers>
+				<li>
+					<damageDef>Bullet</damageDef>
+					<multiplier>1</multiplier>
+				</li>
+			</damageMultipliers>
+		</value>
+	</Operation>
+
+	<!-- Снайперы-наёмники: деньги на оружие, значение CE -->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/PawnKindDef[(@Name="MercenarySniperBase" or defName="Mercenary_Sniper" or defName="Mercenary_Sniper_Acidifier") and not(weaponMoney)]</xpath>
+		<value>
+			<weaponMoney>950~1300</weaponMoney>
+		</value>
+	</Operation>
+
+	<!-- Скария: стадия с болью, значение CE -->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/HediffDef[defName="Scaria" and not(stages)]</xpath>
+		<value>
+			<stages>
+				<li>
+					<painFactor>0.5</painFactor>
+				</li>
+			</stages>
+		</value>
+	</Operation>
+
+	<!--
+	Ствол из Royalty. Пак правит его верб через xpath verbs/li[@Class="CombatExtended.VerbPropertiesCE"]:
+	у CE верб именно такого класса, а без него остаётся ванильный, и recoilAmount с
+	ignorePartialLoSBlocker уходят в узел, где таких полей нет. Класс ставим сами — наш
+	VerbPropertiesCE наследует ванильный, поведение не меняется.
+	-->
+	<Operation Class="PatchOperationAttributeSet">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Gun_HellcatRifle"]/verbs/li</xpath>
+		<attribute>Class</attribute>
+		<value>CombatExtended.VerbPropertiesCE</value>
+	</Operation>
+
+	<!--
+	Шлем мех-командира: массу ему даёт CE (Biotech/Patches/.../Apparel_BiotechHeadgear.xml,
+	Mass 3.0 вместе с Bulk и WornBulk). Без неё ванилла пишет "is haulable, but does not
+	have an authored mass value". Берём ровно его значение.
+	-->
+	<Operation Class="PatchOperationAdd">
+		<success>Always</success>
+		<xpath>Defs/ThingDef[defName="Apparel_ArmorHelmetMechCommander"]/statBases[not(Mass)]</xpath>
+		<value>
+			<Mass>3.0</Mass>
+		</value>
+	</Operation>
+
+</Patch>

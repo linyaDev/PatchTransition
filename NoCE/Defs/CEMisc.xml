@@ -1,0 +1,523 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Остальные дефы Combat Extended, на которые ссылается HSK: типы урона, слои одежды,
+категории патронов, хедиффы, флеки и звуки выстрелов.
+
+Здесь важно, что именно теряется без дефа. Нерешённая ссылка не выбрасывает деф целиком
+(в отличие от ненайденного типа) — поле просто остаётся null. Но для damageDef снаряда,
+слоя одежды или хедиффа в рецепте null означает сломанную вещь, а не косметику, поэтому
+эти дефы восстановлены по-настоящему: с ванильными родителями и ванильными же рабочими
+классами.
+
+Из определений CE выброшено всё, что тянет за собой сам CE: его хедиффы ран
+(Shredded, BruiseBeanbag и прочие — наследуются от ванильного родителя), его
+HediffCompProperties_Venom, его иконки категорий и его modExtensions.
+-->
+<Defs>
+
+	<!-- ===== Типы урона ===== -->
+	<!-- Снаряды HSK прописывают их в damageDef и secondaryDamage -->
+
+	<DamageDef ParentName="Bomb">
+		<defName>Thermobaric</defName>
+		<label>thermobaric</label>
+		<workerClass>DamageWorker_Flame</workerClass>
+		<buildingDamageFactor>2</buildingDamageFactor>
+		<plantDamageFactor>6</plantDamageFactor>
+	</DamageDef>
+
+	<DamageDef ParentName="Bullet">
+		<defName>Fragment</defName>
+		<label>fragment</label>
+		<deathMessage>{0} has been shredded to death.</deathMessage>
+		<minDamageToFragment>5</minDamageToFragment>
+		<buildingDamageFactor>0.125</buildingDamageFactor>
+		<plantDamageFactor>0.125</plantDamageFactor>
+	</DamageDef>
+
+	<DamageDef ParentName="Bullet">
+		<defName>CE_Laser</defName>
+		<label>laser</label>
+		<deathMessage>{0} has been scorched to death.</deathMessage>
+		<hasForcefulImpact>false</hasForcefulImpact>
+		<minDamageToFragment>99999</minDamageToFragment>
+		<defaultDamage>1</defaultDamage>
+		<defaultArmorPenetration>0</defaultArmorPenetration>
+		<buildingDamageFactor>0.1</buildingDamageFactor>
+		<plantDamageFactor>2</plantDamageFactor>
+	</DamageDef>
+
+	<DamageDef ParentName="BluntBase">
+		<defName>Beanbag</defName>
+		<label>beanbag</label>
+		<deathMessage>{0} has been beanbagged to death.</deathMessage>
+		<buildingDamageFactor>0.25</buildingDamageFactor>
+		<plantDamageFactor>0.25</plantDamageFactor>
+		<isRanged>true</isRanged>
+	</DamageDef>
+
+	<DamageDef ParentName="Arrow">
+		<defName>ArrowVenom</defName>
+		<label>venomous arrow</label>
+		<hediff>VenomousArrow</hediff>
+	</DamageDef>
+
+	<!--
+	Электрический урон. armorCategory в CE — его собственный Electric, а он тянет за собой
+	ещё два стата CE, поэтому берём ванильный Heat. Хедифф ElectricalBurn ванильный.
+	-->
+	<DamageDef>
+		<defName>Electrical</defName>
+		<label>electrical</label>
+		<workerClass>DamageWorker_AddInjury</workerClass>
+		<externalViolence>true</externalViolence>
+		<isExplosive>true</isExplosive>
+		<hasForcefulImpact>false</hasForcefulImpact>
+		<makesBlood>false</makesBlood>
+		<deathMessage>{0} has been electrocuted.</deathMessage>
+		<hediff>ElectricalBurn</hediff>
+		<harmAllLayersUntilOutside>true</harmAllLayersUntilOutside>
+		<impactSoundType>Blunt</impactSoundType>
+		<armorCategory>Heat</armorCategory>
+		<minDamageToFragment>15</minDamageToFragment>
+		<defaultDamage>50</defaultDamage>
+	</DamageDef>
+
+	<!-- Пламя прометеума: хедифф пропитки — из CE, поэтому остаётся обычным пламенем -->
+	<DamageDef ParentName="Flame">
+		<defName>PrometheumFlame</defName>
+		<label>prometheum flame</label>
+	</DamageDef>
+
+	<!-- Довески к основному урону: у CE их наносит своя логика, у нас они просто существуют -->
+	<DamageDef ParentName="Bomb">
+		<defName>Bomb_Secondary</defName>
+		<minDamageToFragment>99999</minDamageToFragment>
+		<harmAllLayersUntilOutside>false</harmAllLayersUntilOutside>
+	</DamageDef>
+
+	<DamageDef ParentName="Flame">
+		<defName>Flame_Secondary</defName>
+		<minDamageToFragment>99999</minDamageToFragment>
+	</DamageDef>
+
+	<!-- ===== Слои одежды ===== -->
+	<!-- Без них у брони HSK в <layers> оказывается null, и вещь не наденешь -->
+
+	<ApparelLayerDef>
+		<defName>Shield</defName>
+		<label>shield</label>
+		<drawOrder>290</drawOrder>
+	</ApparelLayerDef>
+
+	<ApparelLayerDef>
+		<defName>StrappedHead</defName>
+		<label>strapped (head)</label>
+		<drawOrder>100</drawOrder>
+		<modExtensions>
+			<li Class="CombatExtended.ApparelLayerExtension">
+				<IsHeadwear>true</IsHeadwear>
+			</li>
+		</modExtensions>
+	</ApparelLayerDef>
+
+	<ApparelLayerDef>
+		<defName>Webbing</defName>
+		<label>webbing</label>
+		<drawOrder>210</drawOrder>
+	</ApparelLayerDef>
+
+	<ApparelLayerDef>
+		<defName>Backpack</defName>
+		<label>backpack</label>
+		<drawOrder>220</drawOrder>
+	</ApparelLayerDef>
+
+	<!-- ===== Категории предметов ===== -->
+	<!-- Иконки CE не копируем: их текстур у нас нет, ванилла нарисует стандартную -->
+
+	<ThingCategoryDef>
+		<defName>Ammo</defName>
+		<label>ammunition</label>
+		<parent>Weapons</parent>
+		<resourceReadoutRoot>true</resourceReadoutRoot>
+	</ThingCategoryDef>
+
+	<ThingCategoryDef>
+		<defName>AmmoNeolithic</defName>
+		<label>neolithic</label>
+		<parent>Ammo</parent>
+	</ThingCategoryDef>
+
+	<ThingCategoryDef>
+		<defName>AmmoMedieval</defName>
+		<label>medieval</label>
+		<parent>Ammo</parent>
+	</ThingCategoryDef>
+
+	<ThingCategoryDef>
+		<defName>AmmoAdvanced</defName>
+		<label>advanced</label>
+		<parent>Ammo</parent>
+	</ThingCategoryDef>
+
+	<ThingCategoryDef>
+		<defName>AmmoShells</defName>
+		<label>shell</label>
+		<parent>Ammo</parent>
+	</ThingCategoryDef>
+
+	<ThingCategoryDef>
+		<defName>AmmoRockets</defName>
+		<label>rocket</label>
+		<parent>Ammo</parent>
+	</ThingCategoryDef>
+
+	<!-- ===== Хедиффы ===== -->
+
+	<HediffDef>
+		<defName>WearingGasMask</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<label>gas mask</label>
+		<description>Wearing a gas mask.</description>
+		<defaultLabelColor>(0.88, 0.88, 0.88)</defaultLabelColor>
+		<makesSickThought>false</makesSickThought>
+		<scenarioCanAdd>false</scenarioCanAdd>
+		<everCurableByItem>false</everCurableByItem>
+		<stages>
+			<li>
+				<label>wearing</label>
+				<minSeverity>0</minSeverity>
+				<restFallFactorOffset>0.1</restFallFactorOffset>
+				<capMods>
+					<li>
+						<capacity>Sight</capacity>
+						<offset>-0.1</offset>
+					</li>
+					<li>
+						<capacity>Eating</capacity>
+						<offset>-0.5</offset>
+					</li>
+					<li>
+						<capacity>Talking</capacity>
+						<offset>-0.15</offset>
+					</li>
+				</capMods>
+			</li>
+		</stages>
+	</HediffDef>
+
+	<!--
+	Отравление. Накопление яда — механика CE (HediffCompProperties_Venom), её здесь нет:
+	хедифф нужен, потому что на него ссылаются рецепты лечения HSK и его же лекарства,
+	снимающие яд. Без дефа у них null, и рецепт ломается.
+	-->
+	<HediffDef>
+		<defName>VenomBuildup</defName>
+		<hediffClass>HediffWithComps</hediffClass>
+		<label>venom buildup</label>
+		<description>Venom building up in the bloodstream.</description>
+		<defaultLabelColor>(0.7, 1.0, 0.7)</defaultLabelColor>
+		<lethalSeverity>1</lethalSeverity>
+		<makesSickThought>true</makesSickThought>
+		<scenarioCanAdd>true</scenarioCanAdd>
+		<comps>
+			<li Class="HediffCompProperties_Immunizable">
+				<severityPerDayNotImmune>-0.08</severityPerDayNotImmune>
+			</li>
+		</comps>
+		<stages>
+			<li>
+				<label>minor</label>
+				<minSeverity>0</minSeverity>
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<offset>-0.05</offset>
+					</li>
+					<li>
+						<capacity>Breathing</capacity>
+						<offset>-0.1</offset>
+					</li>
+				</capMods>
+			</li>
+			<li>
+				<label>serious</label>
+				<minSeverity>0.5</minSeverity>
+				<vomitMtbDays>1</vomitMtbDays>
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<setMax>0.7</setMax>
+					</li>
+					<li>
+						<capacity>Moving</capacity>
+						<offset>-0.25</offset>
+					</li>
+					<li>
+						<capacity>Breathing</capacity>
+						<offset>-0.3</offset>
+					</li>
+				</capMods>
+			</li>
+		</stages>
+	</HediffDef>
+
+	<!-- Отравленные раны: наследуют ванильную базу травм, компонента яда из CE у них нет -->
+	<HediffDef ParentName="InjuryBase">
+		<defName>VenomousBite</defName>
+		<label>venomous bite</label>
+		<labelNoun>a venomous bite wound</labelNoun>
+		<description>A bite wound left by venomous fangs.</description>
+	</HediffDef>
+
+	<HediffDef ParentName="InjuryBase">
+		<defName>VenomousScratch</defName>
+		<label>venomous scratch</label>
+		<labelNoun>a venomous scratch wound</labelNoun>
+		<description>A scratch left by a venom-coated claw.</description>
+	</HediffDef>
+
+	<HediffDef ParentName="InjuryBase">
+		<defName>VenomousArrow</defName>
+		<label>venomous arrow wound</label>
+		<labelNoun>a venomous arrow wound</labelNoun>
+		<description>A puncture left by a venom-tipped arrow.</description>
+	</HediffDef>
+
+	<!-- ===== Флеки ракетного следа ===== -->
+	<!-- Скопированы из CE как есть: родитель и текстуры ванильные -->
+
+	<FleckDef ParentName="FleckBase_Thrown">
+		<defName>Fleck_CERocketFlame</defName>
+		<graphicData>
+			<texPath>Things/Mote/FireGlow</texPath>
+			<shaderType>MoteGlow</shaderType>
+		</graphicData>
+		<altitudeLayer>MoteOverhead</altitudeLayer>
+		<fadeInTime>0</fadeInTime>
+		<solidTime>0.03</solidTime>
+		<fadeOutTime>0.05</fadeOutTime>
+		<growthRate>-5</growthRate>
+	</FleckDef>
+
+	<FleckDef ParentName="FleckBase_Thrown">
+		<defName>Fleck_CERocketSmoke</defName>
+		<graphicData>
+			<texPath>Things/Mote/Smoke</texPath>
+			<shaderType>Transparent</shaderType>
+			<color>(1, 1, 1, 0.6)</color>
+		</graphicData>
+		<altitudeLayer>MoteOverhead</altitudeLayer>
+		<fadeInTime>0.14</fadeInTime>
+		<solidTime>0.05</solidTime>
+		<fadeOutTime>1.5</fadeOutTime>
+		<growthRate>2</growthRate>
+	</FleckDef>
+
+	<FleckDef ParentName="FleckBase_Thrown">
+		<defName>Fleck_CERocketSmokeTrail</defName>
+		<graphicData>
+			<texPath>Things/Mote/Smoke</texPath>
+			<shaderType>Transparent</shaderType>
+			<color>(1, 1, 1, 0.3)</color>
+		</graphicData>
+		<altitudeLayer>MoteOverhead</altitudeLayer>
+		<fadeInTime>0.14</fadeInTime>
+		<solidTime>0.05</solidTime>
+		<fadeOutTime>5</fadeOutTime>
+		<growthRate>1</growthRate>
+	</FleckDef>
+
+	<!-- ===== Звуки выстрела ===== -->
+	<!--
+	Звуковых файлов CE у нас нет, поэтому берём ванильные клипы, похожие по калибру:
+	иначе стволы HSK стреляли бы молча. RocketPropelledLoop_Big — звук ракеты в полёте
+	(soundAmbient), поэтому он сустейнер: ванилла так же озвучивает мину в воздухе.
+	-->
+
+	<SoundDef>
+		<defName>HeavyMG</defName>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<subSounds>
+			<li>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/Minigun/Shot</clipFolderPath>
+					</li>
+				</grains>
+				<volumeRange>45~45</volumeRange>
+				<pitchRange>0.85~0.95</pitchRange>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<SoundDef>
+		<defName>50Cal_Browning</defName>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<subSounds>
+			<li>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/SniperRifle</clipFolderPath>
+					</li>
+				</grains>
+				<volumeRange>50~50</volumeRange>
+				<pitchRange>0.8~0.9</pitchRange>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<SoundDef>
+		<defName>120mm</defName>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<subSounds>
+			<li>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/Artillery/Mortar_Fire</clipFolderPath>
+					</li>
+				</grains>
+				<pitchRange>0.9~1.0</pitchRange>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<SoundDef>
+		<defName>HissFlamethrower</defName>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<subSounds>
+			<li>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/IncendiaryLauncher</clipFolderPath>
+					</li>
+				</grains>
+				<volumeRange>40~40</volumeRange>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<SoundDef>
+		<defName>RocketPropelledLoop_Big</defName>
+		<sustain>True</sustain>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<priorityMode>PrioritizeNearest</priorityMode>
+		<subSounds>
+			<li>
+				<muteWhenPaused>True</muteWhenPaused>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/Artillery/MortarRound_Ambient</clipFolderPath>
+					</li>
+				</grains>
+				<volumeRange>13~13</volumeRange>
+				<pitchRange>0.8~0.9</pitchRange>
+				<sustainAttack>0.1</sustainAttack>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<SoundDef>
+		<defName>Shot_Shotgun_NoRack</defName>
+		<context>MapOnly</context>
+		<maxSimultaneous>1</maxSimultaneous>
+		<subSounds>
+			<li>
+				<grains>
+					<li Class="AudioGrain_Folder">
+						<clipFolderPath>Weapon/Shotgun/Shot</clipFolderPath>
+					</li>
+				</grains>
+				<volumeRange>50~50</volumeRange>
+			</li>
+		</subSounds>
+	</SoundDef>
+
+	<!-- ===== Грязь ===== -->
+	<!-- Её оставляет взрыв прометеума (preExplosionSpawnThingDef у наших же ресурсов) -->
+	<ThingDef ParentName="BaseFilth">
+		<defName>FilthPrometheum</defName>
+		<label>prometheum</label>
+		<description>A puddle of incendiary agent.</description>
+		<thingClass>CombatExtended.IncendiaryFuel</thingClass>
+		<graphicData>
+			<texPath>Things/Filth/LiquidFuel</texPath>
+			<graphicClass>Graphic_Random</graphicClass>
+		</graphicData>
+		<filth>
+			<cleaningWorkToReduceThickness>40</cleaningWorkToReduceThickness>
+		</filth>
+	</ThingDef>
+
+	<!-- ===== Категории материалов ===== -->
+	<!--
+	Steeled — категория CE. Его авто-патчер переписывает ею материалы брони, а пак потом
+	меняет её на свой RuggedMetallic (см. NoCE/Patches/CENodes.xml). Объявлена, чтобы
+	ссылка не осталась висеть, если замена не состоится.
+	-->
+	<StuffCategoryDef>
+		<defName>Steeled</defName>
+		<label>steeled</label>
+	</StuffCategoryDef>
+
+	<!-- ===== Трейт ===== -->
+	<!--
+	Единственный трейт CE. Пак патчит его дважды: своими числами в CE-папке и добавлением
+	SK.ModExt_TraitDegreeScore, и второй патч лежит вне CE-папок, то есть его промах виден
+	в логе. Степени скопированы один в один, включая Suppressability — стат у нас объявлен.
+	-->
+	<TraitDef>
+		<defName>Bravery</defName>
+		<commonality>1</commonality>
+		<degreeDatas>
+			<li>
+				<label>cowardly</label>
+				<description>[PAWN_nameDef] always shies away from danger. [PAWN_pronoun] is usually the first to flee from battle.</description>
+				<degree>-1</degree>
+				<statOffsets>
+					<Suppressability>0.25</Suppressability>
+				</statOffsets>
+			</li>
+			<li>
+				<label>brave</label>
+				<description>Few things scare [PAWN_nameDef]. In battle [PAWN_pronoun] stands unfazed where others panic and flee.</description>
+				<degree>1</degree>
+				<statOffsets>
+					<Suppressability>-0.50</Suppressability>
+				</statOffsets>
+			</li>
+			<li>
+				<label>fearless</label>
+				<description>[PAWN_nameDef] laughs in the face of danger. Some ascribe it to bravery, others to stupidity. Either way, [PAWN_nameDef] seems to lack any sense of self-preservation and will never flee from a threatening situation.</description>
+				<degree>2</degree>
+				<statOffsets>
+					<Suppressability>-1.0</Suppressability>
+				</statOffsets>
+			</li>
+		</degreeDatas>
+	</TraitDef>
+
+	<!-- ===== Подсказки ===== -->
+	<ConceptDef>
+		<defName>CE_Shields</defName>
+		<label>shields</label>
+		<!-- priority обязателен: по умолчанию он огромный, и ванилла пишет "priority isn't set" -->
+		<priority>50</priority>
+		<helpText>Shields are worn in the shield slot and block attacks from the front.</helpText>
+	</ConceptDef>
+
+	<ConceptDef>
+		<defName>CE_MortarDirectFire</defName>
+		<label>artillery direct fire</label>
+		<priority>50</priority>
+		<needsOpportunity>True</needsOpportunity>
+		<helpText>Mortars are more accurate when firing at targets they can see.</helpText>
+	</ConceptDef>
+
+</Defs>

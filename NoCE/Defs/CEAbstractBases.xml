@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Абстрактные дефы-родители из Combat Extended.
+
+Дефы HSK наследуются от них напрямую (ParentName="AmmoBase" и так далее). Без CE
+наследование не разрешается, и деф-потомок не загружается целиком — теряются патроны,
+рецепты патронов, снаряды и турели пака.
+
+Здесь нет содержимого CE: только пустые базы, подвешенные к ближайшим ванильным,
+чтобы потомки получили разумные значения по умолчанию и загрузились.
+
+Файл лежит в NoCE — папке, которую игра подключает только при отсутствии CE
+(см. LoadFolders.xml). Поэтому обёртка PatchOperationFindMod больше не нужна,
+а дефы попадают в дерево сразу, до того как по нему пройдут патчи Core SK.
+-->
+<Defs>
+
+	<!-- ===== Патроны ===== -->
+	<!--
+	destroyOnDrop, tradeability и menuHidden нарочно не как в CE: там патроны спрятаны и
+	уничтожаются при выбросе, а включает их обратно AmmoInjector из самого CE. Без него
+	включать некому, поэтому патроны остаются обычным предметом — это и есть замысел мода.
+
+	tickerType нужен: дефы патронов HSK несут CompExplosive (детонация в огне), а движок
+	требует для него Normal — иначе 35 строк "CompExplosive requires Normal ticker type".
+
+	Пустой CompProperties_Forbiddable стоит здесь по той же причине, что и в CE: патчи
+	Core SK дописывают поля в comps по индексу, и без первого элемента они съезжают.
+	-->
+	<ThingDef Name="AmmoBase" ParentName="ResourceBase" Class="CombatExtended.AmmoDef" Abstract="True">
+		<thingClass>CombatExtended.AmmoThing</thingClass>
+		<destroyOnDrop>false</destroyOnDrop>
+		<stackLimit>500</stackLimit>
+		<tradeability>All</tradeability>
+		<useHitPoints>true</useHitPoints>
+		<tickerType>Normal</tickerType>
+		<statBases>
+			<MaxHitPoints>50</MaxHitPoints>
+			<Flammability>0.2</Flammability>
+			<DeteriorationRate>0.5</DeteriorationRate>
+			<!--
+			Масса по умолчанию: у CE её задают базы отдельных калибров, которых здесь нет, и
+			дефы патронов пака, не прописавшие свою, остаются без массы — движок жалуется
+			"is haulable, but does not have an authored mass value". Потомки её перекрывают.
+			-->
+			<Mass>0.02</Mass>
+		</statBases>
+		<comps>
+			<li Class="CompProperties_Forbiddable" />
+		</comps>
+	</ThingDef>
+
+	<ThingDef Name="SmallAmmoBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+	<ThingDef Name="SpacerSmallAmmoBase" ParentName="SmallAmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+	<ThingDef Name="NeolithicAmmoBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+	<ThingDef Name="AmmoArrowBase" ParentName="NeolithicAmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+	<ThingDef Name="12GaugeBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+	<ThingDef Name="120mmCannonShellBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True" />
+
+	<!--
+	Core SK патчем (PatchOperationAttributeSet) переписывает ParentName двух баз ниже
+	на SpacerMediumAmmoBase, поэтому она должна существовать, иначе обе базы и их
+	потомки теряются.
+
+	tradeTags тоже нужны: Core SK делает PatchOperationAdd в .../tradeTags, и без
+	самого узла операция падает.
+	-->
+	<ThingDef Name="SpacerMediumAmmoBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True">
+		<techLevel>Spacer</techLevel>
+		<tradeTags Inherit="False">
+			<li>CE_AmmoInjector</li>
+			<li>CE_MediumAmmo</li>
+		</tradeTags>
+	</ThingDef>
+
+	<ThingDef Name="15x65mmDiffusingChargedBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True">
+		<tradeTags>
+			<li>CE_AutoEnableTrade_Sellable</li>
+		</tradeTags>
+	</ThingDef>
+
+	<ThingDef Name="80x256mmFuelBase" ParentName="AmmoBase" Class="CombatExtended.AmmoDef" Abstract="True">
+		<stackLimit>25</stackLimit>
+		<tradeTags>
+			<li>CE_AutoEnableTrade_Sellable</li>
+		</tradeTags>
+	</ThingDef>
+
+	<!-- ===== Снаряды ===== -->
+	<!--
+	projectile обязан быть класса ProjectilePropertiesCE, как в CE: Core SK дописывает
+	патчами armorPenetrationSharp и armorPenetrationBlunt во все снаряды, и на ванильном
+	ProjectileProperties таких полей нет — каждая запись давала бы XML-ошибку.
+	-->
+	<ThingDef Name="BaseBulletCE" ParentName="BaseBullet" Abstract="True">
+		<thingClass>CombatExtended.BulletCE</thingClass>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE" />
+	</ThingDef>
+
+	<ThingDef Name="BaseExplosiveBullet" ParentName="BaseBulletCE" Abstract="True">
+		<thingClass>CombatExtended.ProjectileCE_Explosive</thingClass>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE" />
+	</ThingDef>
+
+	<!--
+	Миномётный выстрел: падает сверху, поэтому flyOverhead и нулевая скорость, как в CE.
+	Звуки все ванильные. Без этой базы терялся Bullet_ChargeMortarShell из DLC-модуля —
+	с ним заодно уходили thingClass и comps, то есть ещё три Config error.
+	-->
+	<ThingDef Name="Base81mmMortarShell" ParentName="BaseExplosiveBullet" Abstract="True">
+		<thingClass>CombatExtended.ProjectileCE_Explosive</thingClass>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<speed>0</speed>
+			<flyOverhead>true</flyOverhead>
+			<soundHitThickRoof>Artillery_HitThickRoof</soundHitThickRoof>
+			<soundImpactAnticipate>MortarRound_PreImpact</soundImpactAnticipate>
+			<soundAmbient>MortarRound_Ambient</soundAmbient>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef Name="BaseFragment" ParentName="BaseBulletCE" Abstract="True" />
+	<ThingDef Name="BaseArrowProjectile" ParentName="BaseBulletCE" Abstract="True" />
+	<ThingDef Name="BaseStreamlinedArrowProjectile" ParentName="BaseBulletCE" Abstract="True" />
+	<ThingDef Name="Base12GaugeBullet" ParentName="BaseBulletCE" Abstract="True" />
+	<ThingDef Name="Base120mmCannonShell" ParentName="BaseExplosiveBullet" Abstract="True" />
+	<ThingDef Name="Base15x65mmDiffusingChargedBullet" ParentName="BaseBulletCE" Abstract="True" />
+	<ThingDef Name="BaseRPG7Grenade" ParentName="BaseExplosiveBullet" Abstract="True" />
+
+	<!-- Лазеры: свой класс дефа, в остальном обычный снаряд -->
+	<ThingDef Name="BaseLaserBulletTextured" ParentName="BaseBullet" Class="CombatExtended.Lasers.LaserBeamDefCE" Abstract="True" />
+	<ThingDef Name="LaserBulletRed" ParentName="BaseLaserBulletTextured" Class="CombatExtended.Lasers.LaserBeamDefCE" Abstract="True" />
+	<ThingDef Name="LaserBulletBlue" ParentName="BaseLaserBulletTextured" Class="CombatExtended.Lasers.LaserBeamDefCE" Abstract="True" />
+
+	<!-- ===== Турели ===== -->
+	<ThingDef Name="TurretBase" ParentName="BuildingBase" Abstract="True">
+		<thingClass>Building_TurretGun</thingClass>
+		<category>Building</category>
+		<drawerType>MapMeshAndRealTime</drawerType>
+		<!-- Как и у патронов: турели HSK несут CompExplosive (детонация боезапаса) -->
+		<tickerType>Normal</tickerType>
+		<building>
+			<ai_combatDangerous>true</ai_combatDangerous>
+			<turretGunDef>Gun_Autopistol</turretGunDef>
+		</building>
+	</ThingDef>
+
+	<ThingDef Name="TurretMannedBase" ParentName="TurretBase" Abstract="True" />
+	<ThingDef Name="MinifiedTurretBase" ParentName="MinifiedThing" Abstract="True" />
+	<ThingDef Name="BaseTurretGun" ParentName="BaseWeaponTurret" Abstract="True" />
+	<ThingDef Name="BaseAutoTurretGun" ParentName="BaseWeaponTurret" Abstract="True" />
+
+	<!-- ===== Рецепты патронов ===== -->
+	<RecipeDef Name="AmmoRecipeBase" Abstract="True">
+		<workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+		<effectWorking>Smith</effectWorking>
+		<soundWorking>Recipe_Machining</soundWorking>
+		<workSkill>Crafting</workSkill>
+		<workAmount>1000</workAmount>
+		<targetCountAdjustment>50</targetCountAdjustment>
+	</RecipeDef>
+
+	<RecipeDef Name="AmmoRecipeNeolithicBase" ParentName="AmmoRecipeBase" Abstract="True" />
+	<RecipeDef Name="GrenadeRecipeBase" ParentName="AmmoRecipeBase" Abstract="True" />
+	<RecipeDef Name="ChargeAmmoRecipeBase" ParentName="AmmoRecipeBase" Abstract="True" />
+
+</Defs>

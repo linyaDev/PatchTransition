@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Группы частей тела с суффиксом _2 надо не только объявить, но и привязать к телам:
+дефы животных HSK ссылаются на них из ToolCE, а движок проверяет, что у тела есть
+хотя бы одна часть с такой группой, и иначе пишет Config error.
+
+CE делает это тем же способом — вставляет свою группу рядом с ванильной в каждом BodyDef
+(Patches/Core/Bodies/BodyPartGroupDummies.xml). Повторяем один в один.
+
+Файл лежит в NoCE, то есть применяется только когда CE отсутствует.
+-->
+<Patch>
+
+	<Operation Class="PatchOperationInsert">
+		<xpath>Defs/BodyDef//li[.="TuskAttackTool"]</xpath>
+		<value>
+			<li>TuskAttackTool_2</li>
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationInsert">
+		<xpath>Defs/BodyDef//li[.="HornAttackTool"]</xpath>
+		<value>
+			<li>HornAttackTool_2</li>
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationInsert">
+		<xpath>Defs/BodyDef//li[.="FrontLeftLeg"]</xpath>
+		<value>
+			<li>FrontLeftLeg_2</li>
+		</value>
+	</Operation>
+
+	<Operation Class="PatchOperationInsert">
+		<xpath>Defs/BodyDef//li[.="FrontRightLeg"]</xpath>
+		<value>
+			<li>FrontRightLeg_2</li>
+		</value>
+	</Operation>
+
+</Patch>

@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <AssemblyName>PatchTransitionNoCE</AssemblyName>
+    <RootNamespace>PatchTransition</RootNamespace>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Папка NoCE подключается только при отсутствии Combat Extended (LoadFolders.xml):
+         и диагностика заглушки, и фильтр её сообщений без этого условия бессмысленны.
+         Рядом в той же папке лежит сама заглушка, CombatExtended.dll. -->
+    <OutputPath>..\..\NoCE\Assemblies</OutputPath>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RimWorldPath Condition="'$(RimWorldPath)' == '' AND Exists('D:\RimWorld_HSK\RimWorldWin64_Data\Managed')">D:\RimWorld_HSK</RimWorldPath>
+    <RimWorldPath Condition="'$(RimWorldPath)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Ссылки на заглушку намеренно нет, хотя она и лежит рядом: загрузчик смотрит на
+         загруженные сборки через рефлексию, и жёсткая зависимость только мешала бы
+         отличить заглушку от настоящего CE. -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(RimWorldPath)\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(RimWorldPath)\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <!-- Harmony: фильтр сообщений ставится патчами.
+         Берём ту, что лежит в игре: свою копию не кладём, иначе в памяти окажется две. -->
+    <Reference Include="0Harmony">
+      <HintPath>$(RimWorldPath)\Mods\Harmony\Current\Assemblies\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

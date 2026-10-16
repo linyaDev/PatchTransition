@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Папка NoCE подключается только когда Combat Extended не активен.
+
+Зачем это нужно, а не ручная загрузка из Mod-конструктора. Игра проверяет сборки
+модов в LoadModContent() (ModAssemblyHandler.ReloadAll -> AssemblyIsUsable -> GetTypes),
+а конструкторы Mod-классов выполняются позже, в CreateModClasses(). Поэтому заглушка,
+загруженная вручную, физически не успевает: сборки Core SK, ссылающиеся на типы CE
+(Compatibility_CombatExtended, FireExtinguisher), к тому моменту уже отвергнуты целиком.
+
+Загрузка через load-folder снимает проблему: ModAssemblyHandler берёт файлы через
+GetAllFilesForModPreserveOrder(mod, "Assemblies/"), то есть по всем папкам мода, и делает
+это в порядке загрузки модов — а Patch Transition стоит до Core SK (loadBefore в About.xml).
+
+Правило обратимости соблюдено строже, чем раньше: при установленном CE папки просто
+не существует, и ни заглушки, ни абстрактных баз в игре нет. Проверка идёт через
+ModLister.AnyModActiveNoSuffix, то есть суффикс _steam у подписок учитывается сам.
+
+Версия указана одна: если текущая в списке не найдена, игра берёт наибольшую из
+объявленных, которая не выше текущей. Для 1.7 это и будет 1.6.
+-->
+<!--
+Остальные папки NoXxx — тот же приём, но не про CE: пак ссылается на свои моды безусловно, и
+без них остаются null-ссылки (Radiation в statBases у сотни дефов, Diarrhea у активированного
+угля) либо ненайденные типы в его собственных сборках (Rimefeller, гигиена). Условие у
+каждой папки своё, поэтому один отсутствующий мод не отменяет заглушки другого.
+
+Кода в корне мода нет вовсе: единственная наша сборка лежит в NoCE — диагностика заглушки
+и фильтр её сообщений. Корень несёт только About, этот файл и Tools.
+
+Правок самого пака здесь больше нет: подъём Mod-класса Core SK и подмена сломанных патчей
+его модов переехали в отдельный мод HSKFixes-1.7. Там они уместнее — это поломки новой
+версии игры, а не отсутствие чужих модов.
+-->
+<loadFolders>
+	<v1.6>
+		<li>/</li>
+		<li IfModNotActive="CETeam.CombatExtended">NoCE</li>
+		<li IfModNotActive="Dubwise.Rimatomics">NoRimatomics</li>
+		<li IfModNotActive="Dubwise.DubsBadHygiene">NoHygiene</li>
+		<li IfModNotActive="Dubwise.Rimefeller">NoRimefeller</li>
+	</v1.6>
+</loadFolders>

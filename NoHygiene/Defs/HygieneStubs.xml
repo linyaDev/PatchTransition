@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Один деф мода Dubs Bad Hygiene (Dubwise.DubsBadHygiene), на который ссылается HSK.
+
+Активированный уголь пака (ActivatedCarbonConsumed) раздаёт этот хедифф через
+HediffGiver_Random. Без мода ссылка остаётся null, и ванилла пишет
+"Config error in ActivatedCarbonConsumed: hediff is null".
+
+Скопирован с оригинала, но без его статов: BladderRateMultiplier и ThirstRateMultiplier
+принадлежат самому Dubs Bad Hygiene, и без него это были бы новые ненайденные ссылки.
+Остаётся обычная болезнь на ванильной базе, которая проходит сама.
+
+Папка подключается только когда мода нет (LoadFolders.xml).
+-->
+<Defs>
+
+	<HediffDef ParentName="DiseaseBase">
+		<defName>Diarrhea</defName>
+		<label>diarrhea</label>
+		<description>Loose, watery stools. Unpleasant, and it passes on its own.</description>
+		<scenarioCanAdd>true</scenarioCanAdd>
+		<initialSeverity>1</initialSeverity>
+		<makesSickThought>true</makesSickThought>
+		<comps>
+			<li Class="HediffCompProperties_SeverityPerDay">
+				<severityPerDay>-1</severityPerDay>
+			</li>
+		</comps>
+		<stages>
+			<li>
+				<label>recovering</label>
+				<vomitMtbDays>1</vomitMtbDays>
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<postFactor>0.75</postFactor>
+					</li>
+				</capMods>
+			</li>
+			<li>
+				<label>major</label>
+				<minSeverity>0.2</minSeverity>
+				<vomitMtbDays>0.75</vomitMtbDays>
+				<capMods>
+					<li>
+						<capacity>Consciousness</capacity>
+						<postFactor>0.6</postFactor>
+					</li>
+					<li>
+						<capacity>Moving</capacity>
+						<postFactor>0.85</postFactor>
+					</li>
+				</capMods>
+			</li>
+		</stages>
+	</HediffDef>
+
+</Defs>

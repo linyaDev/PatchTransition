@@ -1,0 +1,5 @@
+Defs/Ammo/HighCaliber/14.5x114mm.xml
+Defs/Bodies/BodyParts_Mechanoid_Internal.xml
+Odyssey/Patches/Scenarios/Scenarios_Odyssey.xml
+Odyssey/Patches/ThingDefs_Items/Items_Resources_Stuff_Odyssey.xml
+Patches/Core/PawnCapacityDefs/PawnCapacities.xml

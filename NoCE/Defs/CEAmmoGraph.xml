@@ -1,0 +1,751 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Граф патронов Combat Extended: наборы патронов, классы патронов, снаряды, которыми стреляют
+стволы HSK, и несколько ресурсов с заготовками, на которых держатся его рецепты.
+
+Что именно ломалось без этих дефов:
+
+- Bullet_* стоят в defaultProjectile у стволов самого HSK. null там — ствол не стреляет
+  вообще. Это главная причина, по которой файл существует.
+- UnfinishedTurretGun — unfinishedThingDef у 21 рецепта турелей, UnfinishedShield и
+  UnfinishedAmmo — у рецептов щитов и патронов.
+- FSX и Prometheum — ингредиенты рецептов HSK (26 и 8 ссылок).
+- Ammo_* раздаются сценариями HSK на старте через ScenPart_StartingThing_Defined.
+- AmmoSetDef и AmmoCategoryDef никто без CE не читает (CompProperties_AmmoUser в заглушке
+  инертен), но ссылки на них есть, и пустые оболочки дешевле, чем 86 строк в логе.
+
+Что сознательно сделано иначе, чем в CE:
+
+- Текстуры и значения CE взяты только там, где файлы есть у ванили. Пути вроде
+  Things/Ammo/Pistol/FMJ лежат в самом CE, поэтому снаряды получили ванильные
+  Bullet_Small/Bullet_Big, а ресурсы и патроны — ванильный Chemfuel.
+- Скорости снарядов ванильные (55~80), а не баллистические из CE: в ванильной механике
+  скорость задаёт только время полёта, а числа CE считались для его трассировки.
+- Ссылки на содержимое CE выброшены: damageDef PrometheumFlame заменён на ванильный Flame,
+  FilthPrometheum и ammoClass убраны, вложенные ParentName сведены к нашим базам.
+- Собственные предметы CE здесь не воспроизводятся: граната CE_Weapon_Grenade*, CE_FlareGun,
+  CE_Apparel_TacVest, CE_Apparel_Backpack, Turret_KPV и Gun_AutocannonTurret остаются
+  отсутствующими. Это вещи с механикой и своей графикой, и подделывать их — уже не
+  совместимость, а переписывание CE.
+-->
+<Defs>
+
+	<!-- ============ Классы патронов ============ -->
+	<!-- Чистые ярлыки: на них ссылается ammoClass у патронов -->
+
+	<CombatExtended.AmmoCategoryDef><defName>FullMetalJacket</defName><label>full metal jacket</label><labelShort>FMJ</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>BuckShot</defName><label>buckshot</label><labelShort>Buck</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>BirdShot</defName><label>birdshot</label><labelShort>Bird</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>Charged</defName><label>charged</label><labelShort>Charged</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>ExplosiveAP</defName><label>armor-piercing explosive</label><labelShort>APHE</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>IncendiaryAP</defName><label>armor-piercing incendiary</label><labelShort>API</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>RocketHEAT</defName><label>high-explosive anti-tank</label><labelShort>HEAT</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>RocketFrag</defName><label>fragmentation</label><labelShort>Frag</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>GrenadeEMP</defName><label>EMP</label><labelShort>EMP</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>ThermobaricFuel</defName><label>thermobaric fuel</label><labelShort>Thermo</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>FoamFuel</defName><label>firefoam</label><labelShort>Foam</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>VenomArrow</defName><label>venom</label><labelShort>Venom</labelShort></CombatExtended.AmmoCategoryDef>
+	<!-- Эти две нашлись только после того, как у LoadoutPropertiesExtension появилось
+	     поле forcedAmmoCategory: пока поля не было, ссылки на них никто не разрешал -->
+	<CombatExtended.AmmoCategoryDef><defName>FlameArrow</defName><label>flame arrow</label><labelShort>Flame</labelShort></CombatExtended.AmmoCategoryDef>
+	<CombatExtended.AmmoCategoryDef><defName>Toxic</defName><label>toxic</label><labelShort>Tox</labelShort></CombatExtended.AmmoCategoryDef>
+
+	<!-- ============ Наборы патронов ============ -->
+	<!--
+	Пустые оболочки с объявленным ammoTypes: Core SK дописывает в него связки
+	«патрон — снаряд» тринадцатью patch-операциями, и без узла они промахиваются.
+
+	Мёртвых ссылок при этом не возникает: AmmoLink в заглушке разбирает связку сам и
+	намеренно ничего не разрешает (см. Source/CombatExtendedShim/Ammo.cs), так что имена
+    патронов CE, которых здесь нет, просто проглатываются. Читать ammoTypes без CE всё
+	равно некому — CompProperties_AmmoUser инертен.
+	-->
+
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_9x19mmPara</defName><label>9x19mm Para</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_45ACP</defName><label>.45 ACP</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_556x45mmNATO</defName><label>5.56x45mm NATO</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_762x39mmSoviet</defName><label>7.62x39mm Soviet</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_762x51mmNATO</defName><label>7.62x51mm NATO</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_50BMG</defName><label>.50 BMG</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_145x114mm</defName><label>14.5x114mm</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_12Gauge</defName><label>12 gauge shell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_6x24mmCharged</defName><label>6x24mm charged</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_15x65mmDiffusingCharged</defName><label>15x65mm diffusing charged</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_30x29mmGrenade</defName><label>30x29mm grenade</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_40x46mmGrenade</defName><label>40x46mm grenade</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_RPG7Grenade</defName><label>RPG-7 grenade</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_SPG9Rocket</defName><label>SPG-9 rocket</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_81mmMortarShell</defName><label>81mm mortar shell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_90mmCannonShell</defName><label>90mm cannon shell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_120mmCannonShell</defName><label>120mm cannon shell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_155mmHowitzerShell</defName><label>155mm howitzer shell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_Flamethrower</defName><label>flamethrower fuel</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_Arrow</defName><label>arrow</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_StreamlinedArrow</defName><label>streamlined arrow</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_303British</defName><label>.303 British</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_5x50mmCaseless</defName><label>5x50mm caseless</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_5x50mmCaselessToxic</defName><label>5x50mm caseless (toxic)</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_30x64mmFuel</defName><label>30x64mm fuel cell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_80x256mmFuel</defName><label>80x256mm fuel cell</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_Flare</defName><label>flare</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_12x64mmCharged</defName><label>12x64mm charged</label><ammoTypes /></CombatExtended.AmmoSetDef>
+	<CombatExtended.AmmoSetDef><defName>AmmoSet_BeamRepeater</defName><label>beam repeater</label><ammoTypes /></CombatExtended.AmmoSetDef>
+
+	<!-- ============ Снаряды стрелкового оружия ============ -->
+	<!-- damageAmountBase взят из CE, остальное ванильное -->
+
+	<ThingDef Name="CEVanillaBulletSmall" ParentName="BaseBulletCE" Abstract="True">
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bullet</damageDef>
+			<speed>70</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef Name="CEVanillaBulletBig" ParentName="BaseBulletCE" Abstract="True">
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bullet</damageDef>
+			<speed>80</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_9x19mmPara_FMJ</defName>
+		<label>9x19mm Para bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>11</damageAmountBase>
+			<speed>55</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_45ACP_FMJ</defName>
+		<label>.45 ACP bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>12</damageAmountBase>
+			<speed>55</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_556x45mmNATO_FMJ</defName>
+		<label>5.56x45mm NATO bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>14</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_762x39mmSoviet_FMJ</defName>
+		<label>7.62x39mm Soviet bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>17</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_762x51mmNATO_FMJ</defName>
+		<label>7.62x51mm NATO bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>20</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletBig">
+		<defName>Bullet_50BMG_FMJ</defName>
+		<label>.50 BMG bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>42</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletBig">
+		<defName>Bullet_145x114mm_FMJ</defName>
+		<label>14.5x114mm bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>53</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_6x24mmCharged</defName>
+		<label>6x24mm charged bolt</label>
+		<graphicData>
+			<texPath>Things/Projectile/Charge_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>13</damageAmountBase>
+			<speed>80</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_12Gauge_Buck</defName>
+		<label>12 gauge pellet (buck)</label>
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Shotgun</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>8</damageAmountBase>
+			<speed>55</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_303British_FMJ</defName>
+		<label>.303 British bullet (FMJ)</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>20</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_5x50mmCaseless_Sabot</defName>
+		<label>5x50mm caseless sabot</label>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>10</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<!-- BulletToxic — деф CE, поэтому урон обычный пулевой -->
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_5x50mmCaseless_Toxic</defName>
+		<label>5x50mm caseless toxic</label>
+		<graphicData>
+			<texPath>Things/Projectile/Needle</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>11</damageAmountBase>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletSmall">
+		<defName>Bullet_6x24mmCharged_Ion</defName>
+		<label>6x24mm ion bolt</label>
+		<graphicData>
+			<texPath>Things/Projectile/Charge_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>10</damageAmountBase>
+			<speed>80</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="CEVanillaBulletBig">
+		<defName>Bullet_12x64mmCharged</defName>
+		<label>12x64mm charged bullet</label>
+		<graphicData>
+			<texPath>Things/Projectile/Charge_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+			<drawSize>(1.3,1.3)</drawSize>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageAmountBase>39</damageAmountBase>
+			<speed>90</speed>
+		</projectile>
+	</ThingDef>
+
+	<!-- ============ Стрелы ============ -->
+
+	<ThingDef ParentName="BaseArrowProjectile">
+		<defName>Projectile_Arrow_Stone</defName>
+		<label>stone arrow</label>
+		<graphicData>
+			<texPath>Things/Projectile/Arrow_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Arrow</damageDef>
+			<damageAmountBase>6</damageAmountBase>
+			<speed>31</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseStreamlinedArrowProjectile">
+		<defName>Projectile_StreamlinedArrow_Steel</defName>
+		<label>steel arrow</label>
+		<graphicData>
+			<texPath>Things/Projectile/Arrow_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Arrow</damageDef>
+			<damageAmountBase>9</damageAmountBase>
+			<speed>42</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseStreamlinedArrowProjectile">
+		<defName>Projectile_StreamlinedArrow_Stone</defName>
+		<label>stone streamlined arrow</label>
+		<graphicData>
+			<texPath>Things/Projectile/Arrow_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Arrow</damageDef>
+			<damageAmountBase>8</damageAmountBase>
+			<speed>38</speed>
+		</projectile>
+	</ThingDef>
+
+	<!-- ============ Осколки ============ -->
+	<!-- Их разбрасывает CompProperties_Fragments, который в заглушке инертен -->
+
+	<ThingDef ParentName="BaseFragment">
+		<defName>Fragment_Small</defName>
+		<label>small fragment</label>
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Small</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Fragment</damageDef>
+			<damageAmountBase>12</damageAmountBase>
+			<speed>40</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseFragment">
+		<defName>Fragment_Large</defName>
+		<label>large fragment</label>
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Fragment</damageDef>
+			<damageAmountBase>34</damageAmountBase>
+			<speed>60</speed>
+		</projectile>
+	</ThingDef>
+
+	<!-- ============ Гранаты, ракеты, снаряды ============ -->
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_30x29mmGrenade_HE</defName>
+		<label>30x29mm grenade</label>
+		<graphicData>
+			<texPath>Things/Projectile/Grenade</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bomb</damageDef>
+			<damageAmountBase>22</damageAmountBase>
+			<explosionRadius>1.0</explosionRadius>
+			<speed>45</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_40x46mmGrenade_HE</defName>
+		<label>40x46mm grenade</label>
+		<graphicData>
+			<texPath>Things/Projectile/Grenade</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bomb</damageDef>
+			<damageAmountBase>22</damageAmountBase>
+			<explosionRadius>1.0</explosionRadius>
+			<speed>45</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseRPG7Grenade">
+		<defName>Bullet_RPG7Grenade_HEAT</defName>
+		<label>RPG-7 HEAT grenade</label>
+		<graphicData>
+			<texPath>Things/Projectile/Rocket_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bullet</damageDef>
+			<damageAmountBase>304</damageAmountBase>
+			<speed>42</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseRPG7Grenade">
+		<defName>Bullet_M72LAW</defName>
+		<label>M72 LAW rocket</label>
+		<graphicData>
+			<texPath>Things/Projectile/Rocket_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bullet</damageDef>
+			<damageAmountBase>248</damageAmountBase>
+			<speed>42</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_SPG9Rocket_Frag</defName>
+		<label>SPG-9 fragmentation rocket</label>
+		<graphicData>
+			<texPath>Things/Projectile/Rocket_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bomb</damageDef>
+			<damageAmountBase>111</damageAmountBase>
+			<explosionRadius>2.0</explosionRadius>
+			<speed>50</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="Base120mmCannonShell">
+		<defName>Bullet_120mmCannonShell_HEAT</defName>
+		<label>120mm HEAT shell</label>
+		<graphicData>
+			<texPath>Things/Projectile/Bullet_Big</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bullet</damageDef>
+			<damageAmountBase>405</damageAmountBase>
+			<speed>90</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="Base81mmMortarShell">
+		<defName>Bullet_81mmMortarShell_HE</defName>
+		<label>81mm mortar shell</label>
+		<graphicData>
+			<texPath>Things/Projectile/LauncherShot</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bomb</damageDef>
+			<damageAmountBase>156</damageAmountBase>
+			<explosionRadius>2.5</explosionRadius>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_155mmHowitzerShell_HE</defName>
+		<label>155mm howitzer shell</label>
+		<graphicData>
+			<texPath>Things/Projectile/LauncherShot</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Bomb</damageDef>
+			<damageAmountBase>546</damageAmountBase>
+			<explosionRadius>5.5</explosionRadius>
+			<speed>30</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_30x29mmGrenade_Smoke</defName>
+		<label>30x29mm smoke grenade</label>
+		<graphicData>
+			<texPath>Things/Projectile/Grenade</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Smoke</damageDef>
+			<damageAmountBase>0</damageAmountBase>
+			<explosionRadius>2.0</explosionRadius>
+			<speed>45</speed>
+		</projectile>
+	</ThingDef>
+
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_30x64mmFuel_Incendiary</defName>
+		<label>30x64mm incendiary fuel shell</label>
+		<graphicData>
+			<texPath>Things/Projectile/Spark</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>PrometheumFlame</damageDef>
+			<damageAmountBase>10</damageAmountBase>
+			<explosionRadius>6</explosionRadius>
+			<speed>40</speed>
+		</projectile>
+	</ThingDef>
+
+	<!-- Огнемёт: прометеумное пламя теперь объявлено, но у него нет пропитки из CE -->
+	<ThingDef ParentName="BaseExplosiveBullet">
+		<defName>Bullet_Flamethrower_Prometheum</defName>
+		<label>prometheum flame</label>
+		<graphicData>
+			<texPath>Things/Projectile/Spark</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<projectile Class="CombatExtended.ProjectilePropertiesCE">
+			<damageDef>Flame</damageDef>
+			<damageAmountBase>5</damageAmountBase>
+			<explosionRadius>1.2</explosionRadius>
+			<speed>25</speed>
+		</projectile>
+	</ThingDef>
+
+	<!-- ============ Ресурсы ============ -->
+	<!-- Ингредиенты рецептов HSK. Взрывчатость оставлена, ссылки на контент CE убраны -->
+
+	<ThingDef ParentName="ResourceBase">
+		<defName>FSX</defName>
+		<label>FSX</label>
+		<description>High-explosive chemical extracted from boomalope sacks and synthesized from chemfuel, used in a variety of industrial and military applications.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<soundInteract>Metal_Drop</soundInteract>
+		<soundDrop>Standard_Drop</soundDrop>
+		<stackLimit>25</stackLimit>
+		<statBases>
+			<MaxHitPoints>70</MaxHitPoints>
+			<MarketValue>7.5</MarketValue>
+			<Flammability>1.0</Flammability>
+			<DeteriorationRate>1.0</DeteriorationRate>
+			<Mass>0.5</Mass>
+		</statBases>
+		<thingCategories>
+			<li>Manufactured</li>
+		</thingCategories>
+		<tickerType>Normal</tickerType>
+		<comps>
+			<li Class="CompProperties_Explosive">
+				<explosiveRadius>0.9</explosiveRadius>
+				<explosiveDamageType>Bomb</explosiveDamageType>
+				<explosiveExpandPerStackcount>1.0</explosiveExpandPerStackcount>
+				<startWickOnDamageTaken>
+					<li>Bomb</li>
+				</startWickOnDamageTaken>
+				<startWickHitPointsPercent>0.5</startWickHitPointsPercent>
+				<explodeOnKilled>True</explodeOnKilled>
+				<wickTicks>60~90</wickTicks>
+			</li>
+		</comps>
+	</ThingDef>
+
+	<ThingDef ParentName="ResourceBase">
+		<defName>Prometheum</defName>
+		<label>prometheum</label>
+		<description>Military-grade incendiary agent that ignites on contact with oxygen. Used to craft incendiary ammo of all kinds.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<soundInteract>Metal_Drop</soundInteract>
+		<soundDrop>Standard_Drop</soundDrop>
+		<stackLimit>25</stackLimit>
+		<statBases>
+			<MaxHitPoints>70</MaxHitPoints>
+			<MarketValue>6</MarketValue>
+			<Flammability>1.0</Flammability>
+			<DeteriorationRate>1.0</DeteriorationRate>
+			<Mass>0.5</Mass>
+		</statBases>
+		<thingCategories>
+			<li>Manufactured</li>
+		</thingCategories>
+		<tickerType>Normal</tickerType>
+		<comps>
+			<li Class="CompProperties_Explosive">
+				<damageAmountBase>2</damageAmountBase>
+				<explosiveRadius>0.9</explosiveRadius>
+				<explosiveDamageType>Flame</explosiveDamageType>
+				<explosiveExpandPerStackcount>0.5</explosiveExpandPerStackcount>
+				<startWickOnDamageTaken>
+					<li>Flame</li>
+				</startWickOnDamageTaken>
+				<startWickHitPointsPercent>0.5</startWickHitPointsPercent>
+				<explodeOnKilled>True</explodeOnKilled>
+				<wickTicks>60~90</wickTicks>
+			</li>
+		</comps>
+	</ThingDef>
+
+	<!-- ============ Заготовки ============ -->
+	<!-- unfinishedThingDef у рецептов HSK: без них рецепт не начать -->
+
+	<ThingDef ParentName="UnfinishedBase">
+		<defName>UnfinishedTurretGun</defName>
+		<label>unfinished turret gun</label>
+		<description>An unfinished turret gun.</description>
+		<graphicData>
+			<texPath>Things/Item/Unfinished/UnfinishedGun</texPath>
+		</graphicData>
+		<statBases>
+			<Mass>5</Mass>
+		</statBases>
+	</ThingDef>
+
+	<ThingDef ParentName="UnfinishedBase">
+		<defName>UnfinishedShield</defName>
+		<label>unfinished shield</label>
+		<description>An unfinished shield.</description>
+		<graphicData>
+			<texPath>Things/Item/Unfinished/UnfinishedApparel</texPath>
+		</graphicData>
+		<statBases>
+			<Mass>2</Mass>
+		</statBases>
+	</ThingDef>
+
+	<ThingDef ParentName="UnfinishedBase">
+		<defName>UnfinishedAmmo</defName>
+		<label>unfinished ammo</label>
+		<description>Unfinished ammunition.</description>
+		<graphicData>
+			<texPath>Things/Item/Unfinished/UnfinishedGun</texPath>
+		</graphicData>
+		<statBases>
+			<Mass>1</Mass>
+		</statBases>
+	</ThingDef>
+
+	<!-- ============ Патроны из сценариев ============ -->
+	<!-- Сценарии HSK выдают их на старте; ammoClass и текстуры CE убраны -->
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="SmallAmmoBase">
+		<defName>Ammo_9x19mmPara_FMJ</defName>
+		<label>9x19mm Para (FMJ)</label>
+		<description>Pistol cartridges.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>0.06</MarketValue>
+			<Mass>0.012</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_9x19mmPara_FMJ</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="12GaugeBase">
+		<defName>Ammo_12Gauge_Buck</defName>
+		<label>12 gauge shell (buck)</label>
+		<description>Shotgun shells loaded with buckshot.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>0.4</MarketValue>
+			<Mass>0.045</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_12Gauge_Buck</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="AmmoBase">
+		<defName>Ammo_145x114mm_FMJ</defName>
+		<label>14.5x114mm (FMJ)</label>
+		<description>Heavy machine gun cartridges.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>2.5</MarketValue>
+			<Mass>0.2</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_145x114mm_FMJ</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="SmallAmmoBase">
+		<defName>Ammo_556x45mmNATO_FMJ</defName>
+		<label>5.56x45mm NATO (FMJ)</label>
+		<description>Rifle cartridges.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>0.1</MarketValue>
+			<Mass>0.012</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_556x45mmNATO_FMJ</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="SmallAmmoBase" Name="CEAmmo45ACP" Abstract="True">
+		<description>Pistol cartridges.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>0.08</MarketValue>
+			<Mass>0.015</Mass>
+		</statBases>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="CEAmmo45ACP">
+		<defName>Ammo_45ACP_FMJ</defName>
+		<label>.45 ACP (FMJ)</label>
+		<cookOffProjectile>Bullet_45ACP_FMJ</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="CEAmmo45ACP">
+		<defName>Ammo_45ACP_HP</defName>
+		<label>.45 ACP (HP)</label>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="CEAmmo45ACP">
+		<defName>Ammo_45ACP_AP</defName>
+		<label>.45 ACP (AP)</label>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="AmmoBase">
+		<defName>Ammo_30x29mmGrenade_HE</defName>
+		<label>30x29mm grenade (HE)</label>
+		<description>Grenades for an automatic grenade launcher.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>3</MarketValue>
+			<Mass>0.35</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_30x29mmGrenade_HE</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="AmmoBase">
+		<defName>Ammo_30x64mmFuel_Incendiary</defName>
+		<label>30x64mm fuel cell (incendiary)</label>
+		<description>Incendiary fuel cells.</description>
+		<graphicData>
+			<texPath>Things/Item/Resource/Chemfuel</texPath>
+			<graphicClass>Graphic_Single</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>3.5</MarketValue>
+			<Mass>0.4</Mass>
+		</statBases>
+		<cookOffProjectile>Bullet_30x64mmFuel_Incendiary</cookOffProjectile>
+	</ThingDef>
+
+	<ThingDef Class="CombatExtended.AmmoDef" ParentName="AmmoArrowBase">
+		<defName>Ammo_Arrow_Stone</defName>
+		<label>arrow (stone)</label>
+		<description>A stone-tipped arrow.</description>
+		<graphicData>
+			<!-- У ванильной древесины текстура разложена по стопкам, отсюда и Graphic_StackCount -->
+			<texPath>Things/Item/Resource/WoodLog</texPath>
+			<graphicClass>Graphic_StackCount</graphicClass>
+		</graphicData>
+		<statBases>
+			<MarketValue>0.13</MarketValue>
+			<Mass>0.016</Mass>
+		</statBases>
+	</ThingDef>
+
+</Defs>

@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Статы, которые объявляет сам Combat Extended.
+
+Дефы HSK пишут их в statBases и equippedStatOffsets тысячами строк. Без стата запись
+превращается в StatModifier с null-полем: это 2239 строк "Could not resolve cross-reference:
+No RimWorld.StatDef named Bulk found to give to RimWorld.StatModifier (null stat)" и живая
+мина — любой код, который потом пройдёт по statBases, получит NullReferenceException.
+
+Поэтому статы объявлены, но пусты: без CE их никто не читает. Из определений CE взяты
+только имя, подпись, категория и значения по умолчанию; его workerClass, parts и ссылки
+на собственные статы CE выброшены — они потянули бы за собой половину мода.
+
+alwaysHide у всех намеренно: показывать в тултипе "пробитие брони 0.15", которое ни на что
+не влияет, хуже, чем не показывать ничего.
+-->
+<Defs>
+
+	<!-- ===== Инвентарь и переноска ===== -->
+	<StatDef>
+		<defName>Bulk</defName>
+		<label>bulk</label>
+		<description>How much inventory space the item takes up. Combat Extended only; nothing reads it here.</description>
+		<category>BasicsNonPawn</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0.001</minValue>
+		<toStringStyle>FloatTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>WornBulk</defName>
+		<label>worn bulk</label>
+		<description>How bulky the apparel is to wear. Combat Extended only; nothing reads it here.</description>
+		<category>Apparel</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>CarryBulk</defName>
+		<label>bulk capacity</label>
+		<description>How much bulk the pawn can carry. Combat Extended only; nothing reads it here.</description>
+		<category>BasicsPawn</category>
+		<defaultBaseValue>20</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatMaxOne</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>CarryWeight</defName>
+		<label>carry weight</label>
+		<description>How much weight the pawn can carry. Combat Extended only; nothing reads it here.</description>
+		<category>BasicsPawn</category>
+		<defaultBaseValue>40</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatMaxOne</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<!-- ===== Пешка в бою ===== -->
+	<StatDef>
+		<defName>Suppressability</defName>
+		<label>suppressability</label>
+		<description>How susceptible the pawn is to suppression. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>AimingAccuracy</defName>
+		<label>aiming accuracy</label>
+		<description>How well the pawn leads moving targets and estimates range. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>1.0</defaultBaseValue>
+		<minValue>0.0</minValue>
+		<maxValue>6.5</maxValue>
+		<toStringStyle>PercentTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>ReloadSpeed</defName>
+		<label>reload speed</label>
+		<description>How fast the pawn reloads firearms. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0.001</minValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>NightVisionEfficiency</defName>
+		<label>night vision efficiency</label>
+		<description>How well the pawn sees in the dark when shooting. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<maxValue>1.0</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>MeleeCritChance</defName>
+		<label>melee critical chance</label>
+		<description>Base chance to land a critical melee hit. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0.0</minValue>
+		<maxValue>3.2</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>MeleeParryChance</defName>
+		<label>melee parry chance</label>
+		<description>Base chance to parry a melee attack. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0.0</minValue>
+		<maxValue>3.2</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>SmokeSensitivity</defName>
+		<label>smoke sensitivity</label>
+		<description>How much smoke affects the pawn. Combat Extended only; nothing reads it here.</description>
+		<category>BasicsPawn</category>
+		<defaultBaseValue>1.0</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<!-- ===== Оружие ===== -->
+	<StatDef>
+		<defName>SightsEfficiency</defName>
+		<label>sights efficiency</label>
+		<description>Quality of the weapon's sights. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0.01</minValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>ShotSpread</defName>
+		<label>spread</label>
+		<description>How much the weapon's shots scatter. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>SwayFactor</defName>
+		<label>weapon sway</label>
+		<description>How much the weapon sways while aiming. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>MeleePenetrationFactor</defName>
+		<label>melee armor penetration factor</label>
+		<description>Armour penetration multiplier for melee attacks. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>MeleeCounterParryBonus</defName>
+		<label>melee counter parry bonus</label>
+		<description>Bonus when countering a parried attack. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>1</defaultBaseValue>
+		<minValue>0</minValue>
+		<toStringStyle>FloatTwo</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>NightVisionEfficiency_Apparel</defName>
+		<label>apparel night vision efficiency</label>
+		<description>Effect of apparel on seeing in the dark. Combat Extended only; nothing reads it here.</description>
+		<category>Apparel</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<maxValue>1.0</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>NightVisionEfficiency_Implant</defName>
+		<label>implant night vision efficiency</label>
+		<description>Effect of implants on seeing in the dark. Combat Extended only; nothing reads it here.</description>
+		<category>PawnCombat</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<maxValue>1.0</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+	<StatDef>
+		<defName>NightVisionEfficiency_Weapon</defName>
+		<label>weapon night vision efficiency</label>
+		<description>Effect of the weapon's optics in darkness. Combat Extended only; nothing reads it here.</description>
+		<category>Weapon</category>
+		<defaultBaseValue>0</defaultBaseValue>
+		<minValue>0</minValue>
+		<maxValue>1.0</maxValue>
+		<toStringStyle>PercentZero</toStringStyle>
+		<alwaysHide>true</alwaysHide>
+	</StatDef>
+
+</Defs>
